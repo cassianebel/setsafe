@@ -86,3 +86,14 @@ SetSafe contains productions, users, production materials, and permissions. Each
   When the manager revokes that cast member's assignment,
   Then SetSafe should remove the cast member's access to the resource,
   And the cast member should no longer be able to open the resource }
+
+# Nonfunctional Requirements
+
+- NFR-001: Access control and confidentiality: Every request for a production or resource must verify the user’s current membership and assignment. Unauthorized access—including to prior versions, direct file links, and resources in another production—must be denied. Revoked access must stop working within 60 seconds. Encrypt data in transit and at rest.
+- NFR-002: Contract and version integrity: A published version must remain unchanged after publication. A signature record must be permanently associated with the specific signer and contract version, with a timestamp and an audit record of publication and signing.
+- NFR-003: Availability: SetSafe should be available 99.9% of each month, excluding explicitly announced maintenance. During an outage, it must not report a contract as signed or a new version as published unless that change was successfully saved.
+- NFR-004: Responsiveness: Under the agreed expected load, 95% of standard page and text-document requests should complete within 2 seconds. Choreography video should begin playback within 4 seconds on an agreed reference device and network.
+- NFR-005: Notification reliability and timeliness: For each event listed in FR-007, create a notification for every user who still has access. At least 99% should be queued within 60 seconds; failed delivery attempts should be retried and reported.
+- NFR-006: Backup and recovery: Back up production data and materials so that a major failure causes no more than 15 minutes of lost changes (RPO) and core access can be restored within 4 hours (RTO). Regularly test recovery, including versions and signature records.
+- NFR-007: Accessibility: The user interface and contract review/signing flow should conform to WCAG 2.2 AA, including keyboard operation and screen-reader access.
+- NFR-008: Capacity and scalability: Define an expected peak workload for users, productions, materials, and concurrent sessions before acceptance. The system should sustain twice the agreed peak without missing the responsiveness or notification targets above.
