@@ -1,0 +1,6 @@
+ImportError while loading conftest '/mnt/data/setsafe_project/tests/conftest.py'.
+tests/conftest.py:2: in <module>
+    from app import create_app
+app.py:2: in <module>
+    from flask import Flask, jsonify, request
+E   ModuleNotFoundError: No module named 'flask'
