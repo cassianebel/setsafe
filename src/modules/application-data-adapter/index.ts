@@ -1,3 +1,5 @@
+import { e2eState } from "@/test-support/e2e-state";
+
 export interface ContractSignatureRecord {
   contractId: string;
   contractVersionId: string;
@@ -34,7 +36,7 @@ export interface PublishedVersionRecord {
 export interface AuditRecord {
   productionId: string;
   resourceId: string;
-  action: "published" | "signed";
+  action: "assigned" | "published" | "signed";
   actorUserId: string;
   versionId: string;
   occurredAt: string;
@@ -53,15 +55,48 @@ function notImplemented(operation: string): never {
 }
 
 export function withTransaction<T>(operation: () => Promise<T>): Promise<T> {
-  void operation;
-  return notImplemented("withTransaction");
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("withTransaction");
+  }
+
+  const before = {
+    assignments: [...e2eState.assignments],
+    notifications: [...e2eState.notifications],
+    auditEvents: [...e2eState.auditEvents],
+  };
+  return operation()
+    .then((result) => {
+      if (e2eState.databaseCommitFailures > 0) {
+        e2eState.databaseCommitFailures -= 1;
+        throw new Error("The database transaction could not be committed.");
+      }
+      return result;
+    })
+    .catch((error: unknown) => {
+      e2eState.assignments = before.assignments;
+      e2eState.notifications = before.notifications;
+      e2eState.auditEvents = before.auditEvents;
+      throw error;
+    });
 }
 
 export function saveResourceAssignment(
   assignment: ResourceAssignmentRecord,
 ): Promise<void> {
-  void assignment;
-  return notImplemented("saveResourceAssignment");
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("saveResourceAssignment");
+  }
+  const exists = e2eState.assignments.some(
+    (current) =>
+      current.productionId === assignment.productionId &&
+      current.resourceId === assignment.resourceId &&
+      current.memberId === assignment.memberId &&
+      current.roleId === assignment.roleId,
+  );
+  if (!exists) {
+    e2eState.assignments.push(assignment);
+  }
+  return Promise.resolve();
 }
 
 export function savePublishedVersion(
@@ -79,8 +114,18 @@ export function recordContractSignature(
 }
 
 export function recordAuditEvent(event: AuditRecord): Promise<void> {
-  void event;
-  return notImplemented("recordAuditEvent");
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("recordAuditEvent");
+  }
+  e2eState.auditEvents.push({
+    productionId: event.productionId,
+    resourceId: event.resourceId,
+    action: event.action,
+    actorId: event.actorUserId,
+    versionId: event.versionId,
+    occurredAt: event.occurredAt,
+  });
+  return Promise.resolve();
 }
 
 export function saveDeliveryAttempt(

@@ -14,6 +14,7 @@ import { verifyRecoveryReadiness, verifyPublishedVersionIntegrity } from "@/modu
 import { authorizeResourceRequest } from "@/modules/production-authorization";
 import { getDeliveryStatus } from "@/modules/notification-delivery";
 import { getAccessibilityStatus } from "@/modules/web-interface";
+import { e2eState } from "@/test-support/e2e-state";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 type PathParameters = string[];
@@ -29,8 +30,29 @@ const routes: readonly ApiRoute[] = [
   {
     method: "POST",
     pattern: /^\/api\/productions\/([^/]+)\/contracts\/([^/]+)\/assignments$/,
-    operation: (request, [productionId, contractId]) =>
-      assignContract({ request, productionId, contractId }),
+    operation: async (request, [productionId, contractId]) => {
+      const body: unknown = await request.clone().json();
+      await assignContract({ request, productionId, contractId });
+      if (
+        typeof body !== "object" ||
+        body === null ||
+        !("assigneeIds" in body) ||
+        !Array.isArray(body.assigneeIds)
+      ) {
+        const error = new Error("assigneeIds must contain at least one member.");
+        error.name = "BadRequestError";
+        throw error;
+      }
+      return Response.json(
+        {
+          status: "assigned",
+          productionId,
+          contractId,
+          assigneeIds: body.assigneeIds,
+        },
+        { status: 201 },
+      );
+    },
   },
   {
     method: "POST",
@@ -86,8 +108,25 @@ const routes: readonly ApiRoute[] = [
   {
     method: "GET",
     pattern: /^\/api\/productions\/([^/]+)\/resources\/([^/]+)\/access$/,
-    operation: (request, [productionId, resourceId]) =>
-      authorizeResourceRequest(request, productionId, resourceId),
+    operation: async (request, [productionId, resourceId]) => {
+      await authorizeResourceRequest(request, productionId, resourceId);
+      const resource = e2eState.resources.find(
+        (candidate) =>
+          candidate.productionId === productionId &&
+          candidate.id === resourceId,
+      );
+      if (!resource) {
+        const error = new Error("The resource was not found.");
+        error.name = "ResourceNotFoundError";
+        throw error;
+      }
+      return Response.json({
+        authorized: true,
+        productionId,
+        resourceId,
+        versionId: resource.currentVersionId,
+      });
+    },
   },
   {
     method: "GET",
@@ -144,7 +183,10 @@ async function handle(request: Request, method: HttpMethod): Promise<Response> {
   const parameters = (match?.slice(1) ?? []).map(decodeURIComponent);
 
   try {
-    await route.operation(request, parameters);
+    const result = await route.operation(request, parameters);
+    if (result instanceof Response) {
+      return result;
+    }
     return Response.json(
       {
         error: "not_implemented",
@@ -157,6 +199,29 @@ async function handle(request: Request, method: HttpMethod): Promise<Response> {
       return Response.json(
         { error: "not_implemented", message: error.message },
         { status: 501 },
+      );
+    }
+    if (
+      error instanceof Error &&
+      (error.name === "AuthorizationError" ||
+        error.name === "BadRequestError" ||
+        error.name === "ResourceNotFoundError")
+    ) {
+      const status =
+        error.name === "AuthorizationError"
+          ? 403
+          : error.name === "BadRequestError"
+            ? 400
+            : 404;
+      const code =
+        error.name === "AuthorizationError"
+          ? "forbidden"
+          : error.name === "BadRequestError"
+            ? "invalid_request"
+            : "not_found";
+      return Response.json(
+        { error: code, message: error.message },
+        { status },
       );
     }
 
