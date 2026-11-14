@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import { e2eState } from "@/test-support/e2e-state";
+
 export type NotificationChannel = "email" | "in_app";
 
 export interface NotificationDeliveryStatus {
@@ -23,10 +26,55 @@ export function enqueueNotifications(
   resourceId: string,
   event: "contract_assigned" | "version_published",
 ): Promise<void> {
-  void productionId;
-  void resourceId;
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("enqueueNotifications");
+  }
   void event;
-  return notImplemented("enqueueNotifications");
+
+  const recipients = new Set<string>();
+  const assignments = e2eState.assignments.filter(
+    (assignment) =>
+      assignment.productionId === productionId &&
+      assignment.resourceId === resourceId,
+  );
+  for (const assignment of assignments) {
+    if (assignment.memberId) {
+      recipients.add(assignment.memberId);
+      continue;
+    }
+    if (assignment.roleId) {
+      for (const user of e2eState.users) {
+        if (
+          user.rolesByProduction[productionId]?.includes(assignment.roleId)
+        ) {
+          recipients.add(user.id);
+        }
+      }
+    }
+  }
+
+  for (const recipientId of recipients) {
+    const user = e2eState.users.find(
+      (candidate) => candidate.id === recipientId,
+    );
+    if (
+      !user ||
+      !Object.prototype.hasOwnProperty.call(
+        user.rolesByProduction,
+        productionId,
+      )
+    ) {
+      continue;
+    }
+    e2eState.notifications.push({
+      id: randomUUID(),
+      recipientId,
+      productionId,
+      resourceId,
+      link: `/api/productions/${encodeURIComponent(productionId)}/resources/${encodeURIComponent(resourceId)}/access`,
+    });
+  }
+  return Promise.resolve();
 }
 
 export function deliverPendingNotifications(): Promise<void> {

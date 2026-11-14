@@ -21,15 +21,16 @@
 ### Slice 1 — Contract smoke path
 - Name: Contract smoke path
 - Goal: Allow a manager to assign a contract to one member and confirm the assigned member receives a valid contract read path with the correct access denial for others.
-- Spec sources: `spec.md` FR-001; `spec.md` Scenario-001; `architecture.md` Request flow Scenario-001; `contracts.md` `assignContract`, `requireProductionRole`, `requireResourceAccess`, `withTransaction`, `saveResourceAssignment`, `recordAuditEvent`, `saveDeliveryAttempt`
+- Spec sources: `spec.md` FR-001, FR-007; `spec.md` Scenario-001; `architecture.md` Request flow Scenario-001; `contracts.md` `authenticateRequest`, `assignContract`, `requireProductionRole`, `requireResourceAccess`, `authorizeResourceRequest`, `listNotifications`, `withTransaction`, `saveResourceAssignment`, `recordAuditEvent`, `enqueueNotifications`
 - Criteria: `Scenario-001`
 - Tests that should turn green:
   - `test_TP-001 — manager assigns and sends a contract`
   - `test_TP-002 — unassigned member cannot access a sent contract`
 - Skeleton to fill in:
-  - `src/app/api/[...path]/route.ts`: `POST /api/productions/:productionId/contracts/:contractId/assignments`
-  - `src/modules/application-server/index.ts`: `assignContract`
-  - `src/modules/production-authorization/index.ts`: `requireProductionRole`, `requireResourceAccess`
+  - `src/app/api/[...path]/route.ts`: `POST /api/productions/:productionId/contracts/:contractId/assignments`, `GET /api/productions/:productionId/resources/:resourceId/access`, `GET /api/notifications`
+  - `src/modules/identity-integration/index.ts`: `authenticateRequest` (test-mode identity)
+  - `src/modules/application-server/index.ts`: `assignContract`, `listNotifications`
+  - `src/modules/production-authorization/index.ts`: `requireProductionRole`, `requireResourceAccess`, `authorizeResourceRequest`
   - `src/modules/application-data-adapter/index.ts`: `withTransaction`, `saveResourceAssignment`, `recordAuditEvent`
   - `src/modules/notification-delivery/index.ts`: `enqueueNotifications`
 - Depends on: None
