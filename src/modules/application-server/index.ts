@@ -9,6 +9,8 @@ import {
   requireResourceAccess,
 } from "../production-authorization";
 import { enqueueNotifications } from "../notification-delivery";
+import { streamAuthorizedFile } from "../private-file-storage-adapter";
+import { authorizeResourceRequest } from "../production-authorization";
 import { e2eState } from "@/test-support/e2e-state";
 
 export interface ContractAssignmentInput {
@@ -144,15 +146,63 @@ export function signLatestContractVersion(
 export function getAssignedScript(
   input: AssignedResourceInput,
 ): Promise<Response> {
-  void input;
-  return notImplemented("getAssignedScript");
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("getAssignedScript");
+  }
+  return getAssignedResource(input, "script");
 }
 
 export function getAssignedChoreography(
   input: AssignedResourceInput,
 ): Promise<Response> {
-  void input;
-  return notImplemented("getAssignedChoreography");
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("getAssignedChoreography");
+  }
+  return getAssignedResource(input, "choreography");
+}
+
+async function getAssignedResource(
+  input: AssignedResourceInput,
+  expectedType: "script" | "choreography",
+): Promise<Response> {
+  await authorizeResourceRequest(
+    input.request,
+    input.productionId,
+    input.resourceId,
+  );
+
+  const resource = e2eState.resources.find(
+    (candidate) =>
+      candidate.productionId === input.productionId &&
+      candidate.id === input.resourceId &&
+      candidate.type === expectedType,
+  );
+  const version = resource?.versions.find(
+    (candidate) => candidate.id === resource.currentVersionId,
+  );
+  if (!resource || !version) {
+    const error = new Error(
+      resource
+        ? "The current published version was not found."
+        : "The resource was not found.",
+    );
+    error.name = "ResourceNotFoundError";
+    throw error;
+  }
+
+  const file = await streamAuthorizedFile(
+    input.productionId,
+    input.resourceId,
+    version.id,
+  );
+  const content = await new Response(file.content).text();
+  return Response.json({
+    productionId: input.productionId,
+    resourceId: input.resourceId,
+    versionId: version.id,
+    content,
+    contentType: file.contentType,
+  });
 }
 
 export function publishScriptVersion(
