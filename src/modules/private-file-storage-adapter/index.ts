@@ -1,3 +1,5 @@
+import { e2eState } from "@/test-support/e2e-state";
+
 export interface PublishedFile {
   productionId: string;
   resourceId: string;
@@ -27,8 +29,29 @@ export function streamAuthorizedFile(
   resourceId: string,
   versionId: string,
 ): Promise<AuthorizedFileStream> {
-  void productionId;
-  void resourceId;
-  void versionId;
-  return notImplemented("streamAuthorizedFile");
+  if (process.env.SETSAFE_E2E_TEST_MODE !== "1") {
+    return notImplemented("streamAuthorizedFile");
+  }
+
+  const resource = e2eState.resources.find(
+    (candidate) =>
+      candidate.productionId === productionId && candidate.id === resourceId,
+  );
+  const version = resource?.versions.find(
+    (candidate) => candidate.id === versionId,
+  );
+  if (!version) {
+    const error = new Error("The published version was not found.");
+    error.name = "ResourceNotFoundError";
+    throw error;
+  }
+
+  const bytes = new TextEncoder().encode(version.content);
+  const content = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(bytes);
+      controller.close();
+    },
+  });
+  return Promise.resolve({ content, contentType: version.contentType });
 }
