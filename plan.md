@@ -74,7 +74,7 @@ Ordering: the read-only access path first (one route, all layers), then the perm
   - Route `GET /api/projects/<project_id>/scripts/<script_id>` (`script` in `app.py`), currently 501
 - **Depends on:** none
 - **Done when:** the listed tests pass and no previously passing test fails, except the known skeleton conflict for `test_routes_return_501[GET-/api/projects/p/scripts/s-None]` (see Test issues TI-1).
-- **Status:** not started
+- **Status:** done — T003-P/T003-N green; expected TI-1 skeleton failure `test_routes_return_501[GET-/api/projects/p/scripts/s-None]`
 
 ---
 
@@ -88,7 +88,7 @@ Ordering: the read-only access path first (one route, all layers), then the perm
 - **Skeleton to fill in:** none new; tightens `permissions.authorize` and `materials.view_script` from Slice 1 (deny before reading the script record).
 - **Depends on:** Slice 1
 - **Done when:** the listed test passes and no previously passing test fails. This test may already pass after Slice 1. The slice stays separate because project-level vs material-level authorization is the easiest rule to get subtly wrong. It also confirms that denial happens *before* `read_record` on the script.
-- **Status:** not started
+- **Status:** done — T007-N green with no extra code; verified (scratch probe) that denial reads no script record and that project membership alone, wrong project, wrong action, and empty user are all denied
 
 ---
 
@@ -208,6 +208,8 @@ Ordering: the read-only access path first (one route, all layers), then the perm
 
 ## Design questions
 
+**Decided (owner, before Slice 1):** DQ-1 → (a) in-memory seed in `database.py`, extended per slice; DQ-3 → (a) built-in `PermissionError` mapped to `403 {"error":"forbidden"}`; DQ-4 → `X-User-ID` is the token, missing/unknown users have no permissions (403); TI-1 → accepted as expected skeleton failures, test file untouched. DQ-5 implemented as per-material permission records `"<project>:<material>:<user>" → {"actions": [...]}` plus a project `members` check.
+
 These need a decision before or during the named slice. Nothing new has been added to the code.
 
 - **DQ-1 (Slice 1): seed data.** Tests assume `proj-1`, `manager-1`, `actor-1`, `script-1` = "Scene one", and so on (test plan, "Common fixtures"), but no contract or module loads them. **Options:**
@@ -240,4 +242,4 @@ No test has been changed.
 
 ## Next action
 
-Start **Slice 1 — View an assigned script** by making `test_acceptance[BDD-003-T003-P]` pass, after deciding DQ-1, DQ-3 and DQ-4.
+Start **Slice 3 — View a choreography video** by making `test_acceptance[BDD-004-T004-P]` pass.

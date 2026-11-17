@@ -1,6 +1,6 @@
 """Flask transport skeleton. Routes deliberately contain no business logic."""
 from flask import Flask, jsonify, request
-from setsafe import contracts, materials, permissions
+from setsafe import authentication, contracts, materials, permissions, presentation
 
 # Each route is mapped to exactly one business-module public entry point.
 ROUTE_CONTRACTS = {
@@ -18,6 +18,17 @@ def create_app() -> Flask:
     def not_implemented(operation: str):
         return jsonify({"error": "not_implemented", "message": f"{operation} is not implemented"}), 501
 
+    def current_user() -> str:
+        return authentication.identify_user(request.headers.get("X-User-ID", ""))
+
+    def respond(operation, *args):
+        """Call one business function; map PermissionError to 403 (DQ-3)."""
+        try:
+            result = operation(*args)
+        except PermissionError:
+            return jsonify({"error": "forbidden"}), 403
+        return jsonify(presentation.present_result(result)), 200
+
     @app.post('/api/projects/<project_id>/contracts/<contract_id>/distributions')
     def distribute(project_id: str, contract_id: str):
         return not_implemented('distribute_contract')
@@ -28,7 +39,7 @@ def create_app() -> Flask:
 
     @app.get('/api/projects/<project_id>/scripts/<script_id>')
     def script(project_id: str, script_id: str):
-        return not_implemented('view_script')
+        return respond(materials.view_script, current_user(), project_id, script_id)
 
     @app.get('/api/projects/<project_id>/videos/<video_id>')
     def video(project_id: str, video_id: str):
