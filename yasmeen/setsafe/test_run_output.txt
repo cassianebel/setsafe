@@ -1,0 +1,85 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: setsafe
+plugins: anyio-4.15.1
+collecting ... collected 20 items
+
+test_acceptance.py::test_acceptance[BDD-001-T001-P] FAILED               [  5%]
+test_acceptance.py::test_acceptance[BDD-001-T001-N] FAILED               [ 10%]
+test_acceptance.py::test_acceptance[BDD-002-T002-P] FAILED               [ 15%]
+test_acceptance.py::test_acceptance[BDD-002-T002-N] FAILED               [ 20%]
+test_acceptance.py::test_acceptance[BDD-003-T003-P] PASSED               [ 25%]
+test_acceptance.py::test_acceptance[BDD-003-T003-N] PASSED               [ 30%]
+test_acceptance.py::test_acceptance[BDD-004-T004-P] FAILED               [ 35%]
+test_acceptance.py::test_acceptance[BDD-004-T004-N] FAILED               [ 40%]
+test_acceptance.py::test_acceptance[BDD-005-T005-P] FAILED               [ 45%]
+test_acceptance.py::test_acceptance[BDD-005-T005-N] FAILED               [ 50%]
+test_acceptance.py::test_acceptance[BDD-006-T006-P] FAILED               [ 55%]
+test_acceptance.py::test_acceptance[BDD-006-T006-N] FAILED               [ 60%]
+test_acceptance.py::test_acceptance[BDD-007-T007-N] PASSED               [ 65%]
+test_skeleton.py::test_routes_return_501[POST-/api/projects/p/contracts/c/distributions-payload0] PASSED [ 70%]
+test_skeleton.py::test_routes_return_501[POST-/api/contracts/c/signatures-payload1] PASSED [ 75%]
+test_skeleton.py::test_routes_return_501[GET-/api/projects/p/scripts/s-None] FAILED [ 80%]
+test_skeleton.py::test_routes_return_501[GET-/api/projects/p/videos/v-None] PASSED [ 85%]
+test_skeleton.py::test_routes_return_501[PUT-/api/projects/p/scripts/s-payload4] PASSED [ 90%]
+test_skeleton.py::test_routes_return_501[POST-/api/projects/p/permissions-payload5] PASSED [ 95%]
+test_skeleton.py::test_six_routes_map_to_public_functions PASSED         [100%]
+
+=================================== FAILURES ===================================
+E   AssertionError: BDD-001/T001-P: expected 200, got 501
+    assert 501 == 200
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-001/T001-P: expected 200, got 501
+E   AssertionError: BDD-001/T001-N: expected 403, got 501
+    assert 501 == 403
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-001/T001-N: expected 403, got 501
+E   AssertionError: BDD-002/T002-P: expected 200, got 501
+    assert 501 == 200
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-002/T002-P: expected 200, got 501
+E   AssertionError: BDD-002/T002-N: expected 403, got 501
+    assert 501 == 403
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-002/T002-N: expected 403, got 501
+E   AssertionError: BDD-004/T004-P: expected 200, got 501
+    assert 501 == 200
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-004/T004-P: expected 200, got 501
+E   AssertionError: BDD-004/T004-N: expected 403, got 501
+    assert 501 == 403
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-004/T004-N: expected 403, got 501
+E   AssertionError: BDD-005/T005-P: expected 200, got 501
+    assert 501 == 200
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-005/T005-P: expected 200, got 501
+E   AssertionError: BDD-005/T005-N: expected 403, got 501
+    assert 501 == 403
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-005/T005-N: expected 403, got 501
+E   AssertionError: BDD-006/T006-P: expected 200, got 501
+    assert 501 == 200
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-006/T006-P: expected 200, got 501
+E   AssertionError: BDD-006/T006-N: expected 403, got 501
+    assert 501 == 403
+     +  where 501 = <WrapperTestResponse streamed [501 NOT IMPLEMENTED]>.status_code
+setsafe/test_acceptance.py:28: AssertionError: BDD-006/T006-N: expected 403, got 501
+E   assert 403 == 501
+     +  where 403 = <WrapperTestResponse streamed [403 FORBIDDEN]>.status_code
+setsafe/test_skeleton.py:15: assert 403 == 501
+=========================== short test summary info ============================
+FAILED test_acceptance.py::test_acceptance[BDD-001-T001-P] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-001-T001-N] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-002-T002-P] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-002-T002-N] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-004-T004-P] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-004-T004-N] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-005-T005-P] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-005-T005-N] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-006-T006-P] - AssertionError: ...
+FAILED test_acceptance.py::test_acceptance[BDD-006-T006-N] - AssertionError: ...
+FAILED test_skeleton.py::test_routes_return_501[GET-/api/projects/p/scripts/s-None]
+========================= 11 failed, 9 passed in 0.12s =========================
