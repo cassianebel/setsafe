@@ -1,21 +1,32 @@
 # SetSafe — Flask skeleton
 
-Conceptual architecture adapted to Python + Flask + pytest. No business logic is implemented.
+Yasmeen's SetSafe implementation (Python + Flask + pytest), kept in `yasmeen/setsafe/` so it sits alongside the team's Next.js project at the repo root. Specs: `yasmeen-spec.md`, `yasmeen-architecture.md`, `yasmeen-contracts.md`, `yasmeen-test_plan.md`; slices: `plan.md`. Slices 1–2 (BDD-003, BDD-007) are implemented; other routes still return 501.
 
 ## Start
+
+From this folder (`yasmeen/setsafe/`):
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-python app.py
+cd ..
+python -m flask --app setsafe.app run
+```
+
+The app imports itself as the `setsafe` package, so the server is started from the parent folder (`yasmeen/`). Try:
+
+```bash
+curl -H "X-User-ID: actor-1" http://127.0.0.1:5000/api/projects/proj-1/scripts/script-1
 ```
 
 Windows PowerShell activation: `.venv\Scripts\Activate.ps1`.
 
-The server starts at `http://127.0.0.1:5000`. Every declared API returns HTTP 501 until implemented.
+The server starts at `http://127.0.0.1:5000`. Routes not yet implemented return HTTP 501.
 
 ## Tests
+
+From this folder (`yasmeen/setsafe/`); use `python -m pytest`, not bare `pytest`:
 
 ```bash
 python -m pytest -q
